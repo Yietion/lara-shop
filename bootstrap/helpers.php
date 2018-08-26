@@ -1,5 +1,7 @@
 <?php
-function test_function()
-{
-    return "OK";
+if(!function_exists("route_class")){
+    function route_class()
+    {
+        return str_replace(".", "-", Route::currentRouteName());
+    }
 }
