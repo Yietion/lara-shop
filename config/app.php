@@ -15,6 +15,10 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    /**
+     * faker_locale工厂生成中文
+     */
+    'faker_locale' => 'zh_CN',
     /*
     |--------------------------------------------------------------------------
     | Application Environment
