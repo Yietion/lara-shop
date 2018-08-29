@@ -5,17 +5,24 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\AddCartRequest;
 use App\Models\CartItem;
+use App\Models\ProductSku;
 
 class CartController extends Controller
 {
     //
+    
+	public function index(Request $request)
+	{
+		$cartItems = $request->user()->cartitems()->with(['productSku.product'])->get();
+		return view('cart.index', ['cartItems'=>$cartItems]);
+	}
     
 	public function add(AddCartRequest $request)
 	{
 		$user = $request->user();
 		$skuId = $request->input('sku_id');
 		$amount = $request->input('amount');
-		if($cart = $user->cartitems()->where('product_sku_id', $skuId)->first()){
+		if($cart = $user->cartItems()->where('product_sku_id', $skuId)->first()){
 			$cart->update(
 					['amount'=>$cart->amount + $amount]
 					);
@@ -27,5 +34,11 @@ class CartController extends Controller
 		}
 		return [];
 		
+	}
+	
+	public function move(ProductSku $sku, Request $request)
+	{
+		$request->user()->cartItems()->where('product_sku_id', $sku->id)->delete();
+		return [];
 	}
 }
