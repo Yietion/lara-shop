@@ -14,7 +14,8 @@ class CartController extends Controller
 	public function index(Request $request)
 	{
 		$cartItems = $request->user()->cartitems()->with(['productSku.product'])->get();
-		return view('cart.index', ['cartItems'=>$cartItems]);
+		$addresses = $request->user()->addresses()->orderBy('last_used_at', 'desc')->get();
+		return view('cart.index', ['cartItems'=>$cartItems, 'addresses' => $addresses]);
 	}
     
 	public function add(AddCartRequest $request)
@@ -36,7 +37,7 @@ class CartController extends Controller
 		
 	}
 	
-	public function move(ProductSku $sku, Request $request)
+	public function remove(ProductSku $sku, Request $request)
 	{
 		$request->user()->cartItems()->where('product_sku_id', $sku->id)->delete();
 		return [];
