@@ -8,6 +8,7 @@ use App\Models\UserAddress;
 use Carbon\Carbon;
 use App\Models\Order;
 use App\Models\ProductSku;
+use App\Jobs\CloseOrder;
 
 class OrdersController extends Controller
 {
@@ -42,10 +43,14 @@ class OrdersController extends Controller
     			$item->productSku()->associate($sku);
     			$item->save();
     			$totalAmount  += $sku->price * $data['amount'];
+    			if ($sku->decreaseStock($data['amount']) <= 0) {
+    				throw new InvalidRequestException('该商品库存不足');
+    			}
     		}
     		$order->update(['total_amount' => $totalAmount]);
     		$skuIds = collect($request->input('items'))->pluck('sku_id');
     		$user->cartItems()->whereIn('product_sku_id', $skuIds)->delete();
+    		$this->dispatch(new CloseOrder($order, config('app.order_ttl')));
     		return $order;
     	});
     		return $order;
