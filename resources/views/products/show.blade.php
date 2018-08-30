@@ -75,9 +75,7 @@
         // 发起一个 post ajax 请求，请求 url 通过后端的 route() 函数生成。
         axios.post('{{ route('products.favor', ['product' => $product->id]) }}')
           .then(function () { // 请求成功会执行这个回调
-            swal('操作成功', '', 'success').then(function() {
-                location.href = '{{ route('cart.index') }}';
-            });
+            swal('操作成功', '', 'success');
           }, function(error) { // 请求失败会执行这个回调
             // 如果返回码是 401 代表没登录
             if (error.response && error.response.status === 401) {
@@ -109,7 +107,9 @@
           amount: $('.cart_amount input').val(),
         })
           .then(function () { // 请求成功执行此回调
-            swal('加入购物车成功', '', 'success');
+            swal('加入购物车成功', '', 'success').then(function() {
+                location.href = '{{ route('cart.index') }}';
+            });
           }, function (error) { // 请求失败执行此回调
             if (error.response.status === 401) {
 
