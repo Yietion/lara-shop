@@ -97,5 +97,25 @@ class OrdersController extends Controller
     
     		return redirect()->back();
     }
+    
+    public function applyRefund(Order $order, Request $request)
+    {
+    	$this->authorize('own', $order);
+    	if(!$order->paid_at){
+    		throw new InvalidRequestException('该订单未支付，不可退款');
+    	}
+    	if ($order->refund_status !== Order::REFUND_STATUS_PENDING) {
+    		throw new InvalidRequestException('该订单已经申请过退款，请勿重复申请');
+    	}
+    	$extra                  = $order->extra ?: [];
+    	$extra['refund_reason'] = $request->input('reason');
+    	// 将订单退款状态改为已申请退款
+    	$order->update([
+    			'refund_status' => Order::REFUND_STATUS_APPLIED,
+    			'extra'         => $extra,
+    	]);
+    	
+    	return $order;
+    }
 }
  
