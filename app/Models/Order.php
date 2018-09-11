@@ -100,4 +100,9 @@ class Order extends Model
 		\Log::warning('find order no failed');
 		return false;
 	}
+	
+	public function couponCode()
+	{
+		return $this->belongsTo(CouponCode::class);
+	}
 }
