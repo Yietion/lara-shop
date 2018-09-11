@@ -53,8 +53,8 @@ class CouponCodesController extends Controller
     public function edit($id, Content $content)
     {
         return $content
-            ->header('Edit')
-            ->description('description')
+            ->header('编辑优惠券')
+            ->description('编辑优惠券')
             ->body($this->form()->edit($id));
     }
 
@@ -67,8 +67,8 @@ class CouponCodesController extends Controller
     public function create(Content $content)
     {
         return $content
-            ->header('Create')
-            ->description('description')
+            ->header('新增优惠券')
+            ->description('新增优惠券')
             ->body($this->form());
     }
 
@@ -137,18 +137,33 @@ class CouponCodesController extends Controller
     protected function form()
     {
         $form = new Form(new CouponCode);
-
-        $form->text('name', 'Name');
-        $form->text('code', 'Code');
-        $form->text('type', 'Type');
-        $form->decimal('value', 'Value');
-        $form->number('total', 'Total');
-        $form->number('used', 'Used');
-        $form->decimal('min_amount', 'Min amount');
-        $form->datetime('not_before', 'Not before')->default(date('Y-m-d H:i:s'));
-        $form->datetime('not_after', 'Not after')->default(date('Y-m-d H:i:s'));
-        $form->switch('enabled', 'Enabled');
-
+        $form->display('id', 'ID');
+        $form->text('name', '名称')->rules('required');
+        $form->text('code', '优惠码')->rules(function($form){
+        	if($id = $form->model()->id){
+        		return 'nullable|unique:coupon_codes,code,'.$id.',id';
+        	}else{
+        		return 'nullable|unique:coupon_codes';
+        	}
+        });
+        $form->radio('type', '类型')->options(CouponCode::$typeMap)->rules('required');
+        $form->decimal('value', '折扣')->rules(function ($form){
+        	if($form->type === CouponCode::TYPE_PERCENT){
+        		return 'required|numeric|between:1,99';
+        	}else{
+        		return 'required|numeric|min:0.01';
+        	}
+        });
+        $form->number('total', '总量')->rules('required|numeric|min:0');
+        $form->decimal('min_amount', '最低金额')->rules('required|numeric|min:0');
+        $form->datetime('not_before', '开始时间');
+        $form->datetime('not_after', '结束时间');
+        $form->switch('enabled', '启用')->options([1 => '是', 0 => '否']);
+		$form->saving(function (Form $form){
+			if(!$form->code){
+				$form->code = CouponCode::findAvailableCode();
+			}
+		});
         return $form;
     }
 }
